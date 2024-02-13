@@ -13,7 +13,7 @@ const jwt =require("jsonwebtoken")
   ) {
     const token = jwt.sign(
       { email },
-      process.env.ADMIN_ACCES_TOKEN_SECRET,{ expiresIn: "2h" }
+      process.env.ADMIN_ACCES_TOKEN_SECRET,{ expiresIn: "48h" }
     );
     return res.status(200).send({
       statu: "Succes",
@@ -73,8 +73,8 @@ const jwt =require("jsonwebtoken")
 
   updateProduct: async (req, res) => {
     const { id } = req.params;
-    const { name, description, price, catogery, image } = req.body;
-    console.log(name, description, price, catogery, image)
+    const { name, description, price, category, image } = req.body;
+    console.log(name, description, price, category, image)
 
     try {
       // Find the existing product by ID
@@ -88,7 +88,7 @@ const jwt =require("jsonwebtoken")
       if (name) product.name = name;
       if (description) product.description = description;
       if (price) product.price = price;
-      if (catogery) product.catogery = catogery;
+      if (category) product.category = category;
       if (image) product.image = image;
 
       // Save the updated product

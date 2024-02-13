@@ -43,8 +43,9 @@ exports.removeFromCart = async (req,res)=>{
 
 exports.getWishlist = async (req,res)=>{
   try {
-    const {userid}=req.body
-    const user=  await User.findById(userid).populate('wishlist.productId')
+    const userId = req.query.userId; // Retrieve userId from query parameters
+    console.log(userId)
+    const user=  await User.findById(userId).populate('wishlist.productId')
     console.log(user)
     if(!user){
       return res.status(404).json({ error: 'User not found' });

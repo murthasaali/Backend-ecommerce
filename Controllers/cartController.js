@@ -49,8 +49,8 @@ exports.removeFromCart = async (req, res) => {
 // Get the user's cart items
 exports.getCart = async (req, res) => {
   try {
-    const { userid } = req.body;
-    const user = await User.findById(userid).populate('cart.productId');
+    const userId = req.query.userId; // Retrieve userId from query parameters
+    const user = await User.findById(userId).populate('cart.productId');
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });

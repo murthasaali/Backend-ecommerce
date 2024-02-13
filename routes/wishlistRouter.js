@@ -10,7 +10,7 @@ router.use(verifyToken);
 router.post('/add-to-wishlist/:productId', wishlistController.addToWishlist);
 
 // Route to remove a product from the user's cart
-router.get('/get', wishlistController.getWishlist);
+router.get('/getwishlist', wishlistController.getWishlist);
 
 // Route to get the user's cart items
 
