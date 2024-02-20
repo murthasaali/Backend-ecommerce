@@ -107,7 +107,7 @@ const jwt =require("jsonwebtoken")
   getProductById: async (req, res) => {
     const { id } = req.params;
     console.log(id);
-    try {
+    try {   
 
       const product = await Product.findById(id);
 
