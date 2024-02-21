@@ -17,8 +17,8 @@ const postSchema = new mongoose.Schema({
     }],
     comments: [{ // Array of comments referencing the Comment model
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Comment'
-    }]
+        ref: 'comment'
+    }],
     
 }
 )
@@ -26,7 +26,7 @@ const postSchema = new mongoose.Schema({
 const likeSchema= new mongoose.Schema({
     post:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"post",
+        ref:"Post",
         count: {
             type: Number,
             default: 0 
@@ -42,6 +42,10 @@ const commentSchema = new mongoose.Schema({
     text: {
         type: String,
         required: true
+    },
+    author: {
+        type: mongoose.Schema.Types.ObjectId, // Assuming userId is stored as ObjectId
+        ref: 'User' // Reference to the User model where user details are stored
     }
 });
 
