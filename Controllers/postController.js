@@ -21,9 +21,9 @@ const postController = {
   },
   commentPost: async (req, res) => {
     try {
-      const { postId } = req.params; // Assuming postId is passed in the URL params
+      const  postId  = req.params.postId; // Assuming postId is passed in the URL params
       const { text, author } = req.body; // Assuming author (userId) is passed in the request body
-
+console.log(postId)
       // Check if the post exists
       const post = await PostSchema.findById(postId);
       if (!post) {
