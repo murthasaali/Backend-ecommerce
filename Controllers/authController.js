@@ -39,7 +39,7 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "48h" });
+    const token = jwt.sign({ userId: user.id}, process.env.JWT_SECRET, { expiresIn: "48h" });
 
     res.status(200).json({ status: "succes", message: "Login Successfull", data: token, id});
   } catch (error) {

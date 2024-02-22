@@ -13,11 +13,11 @@ module.exports = function verifyToken(req, res, next) {
             }
             return res.status(401).json({ error: "Unauthorized 😠" });
         }
-        if (!decode || !decode.email) {
+        if (!decode || !decode.userId) {
             return res.status(401).json({ error: "Invalid token 😕" });
         }
-        console.log(decode,req.email);
-        req.email = decode.email;
+        console.log(decode);
+        req.userId = decode.userId;
         next();
     });
 };
