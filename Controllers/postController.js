@@ -8,7 +8,8 @@ const postController = {
       // Create new post
       const newPost = await PostSchema.create({
         image,
-        caption
+        caption,
+        postedBy:req.userId
       });
       console.log(newPost)
 
@@ -94,36 +95,39 @@ const postController = {
   },
   getLatestPosts: async (req, res) => {
     try {
-      // Query the database for the latest 10 posts
-      const latestPosts = await PostSchema.find()
-        .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-        .limit(10); // Limit the number of posts returned to 10
+        // Query the database for the latest 10 posts, populating the 'postedBy' field to get full user details
+        const latestPosts = await PostSchema.find()
+            .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+            .limit(10) // Limit the number of posts returned to 10
+            .populate('postedBy', 'username email profilePicture'); // Populate the 'postedBy' field with specific fields of the User model
 
-      // Iterate through each post and calculate the count of likes and comments
-      const postsWithCounts = await Promise.all(latestPosts.map(async (post) => {
-        // Count the number of likes for the post
-        const likesCount = await LikeSchema.countDocuments({ post: post._id });
+        // Iterate through each post and calculate the count of likes and comments
+        const postsWithCounts = await Promise.all(latestPosts.map(async (post) => {
+            // Count the number of likes for the post
+            const likesCount = await LikeSchema.countDocuments({ post: post._id });
 
-        // Count the number of comments for the post
-        const commentsCount = await CommentSchema.countDocuments({ post: post._id });
+            // Count the number of comments for the post
+            const commentsCount = await CommentSchema.countDocuments({ post: post._id });
 
-        // Return the post along with the counts
-        return {
-          _id: post._id,
-          image: post.image,
-          caption: post.caption,
-          createdAt: post.createdAt,
-          likesCount,
-        };
-      }));
+            // Return the post along with the counts and the details of the user who posted it
+            return {
+                _id: post._id,
+                image: post.image,
+                caption: post.caption,
+                createdAt: post.createdAt,
+                likesCount,
+                postedBy: post.postedBy // Assuming 'postedBy' is populated, it will contain the full details of the user
+            };
+        }));
 
-      // Return success response with the latest posts and their counts
-      return res.status(200).json({ latestPosts: postsWithCounts });
+        // Return success response with the latest posts and their counts
+        return res.status(200).json({ latestPosts: postsWithCounts });
     } catch (error) {
-      console.error('Error fetching latest posts:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error fetching latest posts:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
-  },
+},
+
   getPostComments: async (req, res) => {
     try {
       const { postId } = req.params; // Assuming postId is passed in the URL params
