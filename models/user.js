@@ -31,6 +31,13 @@ const userSchema = new Schema({
     required: true,
     minLength: 6,
   },
+  username: {
+    type: String,
+    required: true,
+  },
+  image: {
+    type: String,
+  },
   cart: [cartItemSchema]
   ,wishlist:[wishlisSchema]
 });
