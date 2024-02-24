@@ -95,40 +95,36 @@ const postController = {
   },
   getLatestPosts: async (req, res) => {
     try {
+      
         // Query the database for the latest 10 posts, populating the 'postedBy' field to get full user details
         const latestPosts = await PostSchema.find()
             .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
             .limit(10) // Limit the number of posts returned to 10
             .populate({
-                path: 'postedBy',
-                select: 'image email userid' // Select specific fields of the User model
-            })
-            .populate({
-                path: 'likes',
-                select: '_id' // Select only the like _id
-            })
-            .populate({
-                path: 'comments',
-                populate: {
-                    path: 'author',
-                    select: 'image email' // Select specific fields of the User model
-                }
-            });
-
-        // Iterate through each post to calculate the count of likes and comments
+              path: 'comments',
+              populate: {
+                  path: 'author',
+                  select: 'email',
+                   // Select specific fields of the User model
+              }
+          });
+        // Iterate through each post and calculate the count of likes and comments
         const postsWithCounts = await Promise.all(latestPosts.map(async (post) => {
             // Count the number of likes for the post
             const likesCount = await LikeSchema.countDocuments({ post: post._id });
+            console.log(post)
+            // Count the number of comments for the post
 
             // Return the post along with the counts and the details of the user who posted it
+         
             return {
                 _id: post._id,
                 image: post.image,
                 caption: post.caption,
                 createdAt: post.createdAt,
                 likesCount,
-                postedBy: post.postedby,
-                comments: post.comments
+                comments:post.comments,
+                postedBy: post.postedBy // Assuming 'postedBy' is populated, it will contain the full details of the user
             };
         }));
 
