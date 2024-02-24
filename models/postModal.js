@@ -11,6 +11,10 @@ const postSchema = new mongoose.Schema({
         required:true
         
     },
+    hashtag:{
+        type:String,
+        
+    },
     likes:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"like"
