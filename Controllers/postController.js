@@ -93,9 +93,8 @@ const postController = {
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   },
-  getLatestPosts: async (req, res) => {
+   getLatestPosts :async (req, res) => {
     try {
-      
         // Query the database for the latest 10 posts, populating the 'postedBy' field to get full user details
         const latestPosts = await PostSchema.find()
             .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
@@ -108,16 +107,17 @@ const postController = {
             const likesCount = await LikeSchema.countDocuments({ post: post._id });
 
             // Count the number of comments for the post
+            const commentsCount = await CommentSchema.countDocuments({ post: post._id });
 
             // Return the post along with the counts and the details of the user who posted it
-         
             return {
                 _id: post._id,
                 image: post.image,
                 caption: post.caption,
                 createdAt: post.createdAt,
                 likesCount,
-                hashtag:post.hashtag,
+                commentsCount,
+                hashtag: post.hashtag,
                 postedBy: post.postedBy // Assuming 'postedBy' is populated, it will contain the full details of the user
             };
         }));
@@ -129,7 +129,6 @@ const postController = {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 },
-
   getPostComments: async (req, res) => {
     try {
       const { postId } = req.params; // Assuming postId is passed in the URL params
