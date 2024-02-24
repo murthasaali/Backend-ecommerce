@@ -125,6 +125,7 @@ const postController = {
                 createdAt: post.createdAt,
                 likesCount,
                 comments:post.comments,
+                hashtag:post.hashtag,
                 postedBy: post.postedBy // Assuming 'postedBy' is populated, it will contain the full details of the user
             };
         }));
