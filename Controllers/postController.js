@@ -4,12 +4,13 @@ const postController = {
   createPost: async (req, res) => {
     try {
       // Extract data from request body
-      const { image, caption } = req.body;
+      const { image, caption,hashtag } = req.body;
       // Create new post
       const newPost = await PostSchema.create({
         image,
         caption,
         postedBy:req.userId
+        ,hashtag
       });
       console.log(newPost)
 

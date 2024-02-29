@@ -6,6 +6,7 @@ const wishlistrouter=require("./routes/wishlistRouter")
 const cartRouter = require('./routes/cartRouter'); // Corrected import
 const productRouter = require('./routes/productRouter');
 const postRouter = require("./routes/postRouter")
+const followRouter=require("./routes/followRouter")
 const bodyParser = require("body-parser");
 const app = express();
 const port = 3001;
@@ -41,6 +42,7 @@ app.use('/cart', cartRouter);
 app.use('/wishlist',wishlistrouter)
 app.use('/posts',postRouter)
 app.use('/admin', productRouter);
+app.use('/follows', followRouter);
 app.get('/protected', (req, res) => {
   res.json({ message: 'Access granted' });
 });
