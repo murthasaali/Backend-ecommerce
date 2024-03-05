@@ -22,6 +22,33 @@ const postController = {
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   },
+  deletePost: async (req, res) => {
+    try {
+      // Extract post ID from request parameters
+      const postId = req.params.id;
+  
+      // Check if the post exists
+      const post = await PostSchema.findById(postId);
+      if (!post) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+  
+      // Check if the user is authorized to delete the post
+      if (post.postedBy !== req.userId) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+  
+      // Delete the post
+      await PostSchema.findByIdAndDelete(postId);
+  
+      // Return success response
+      return res.status(200).json({ message: 'Post deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+,  
   commentPost: async (req, res) => {
     try {
       const { text,postId } = req.body; // Assuming author (userId) is passed in the request body

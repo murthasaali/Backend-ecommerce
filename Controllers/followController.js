@@ -60,3 +60,32 @@ exports.unfollowUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+exports.getUnfollowedUsers = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    console.log("hi",userId)
+    // Find the user by ID including the users they are following
+    const user = await User.findById(userId).populate('following', 'username');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Get IDs of users the user is following
+    const followingIds = user.following.map(user => user._id);
+
+    // Find all users except the current user
+    const allUsers = await User.find({ _id: { $ne: userId } });
+
+    // Filter out users the user is already following
+    const usersNotFollowed = allUsers.filter(u => !followingIds.includes(u._id));
+
+    res.json(usersNotFollowed);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+}
