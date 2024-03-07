@@ -1,10 +1,11 @@
 const {PostSchema,CommentSchema,LikeSchema} = require("../models/postModal") // Assuming your schemas are in a 'models' directory
 
 const postController = {
-  createPost: async (req, res) => {
+    createPost: async (req, res) => {
     try {
       // Extract data from request body
       const { image, caption,hashtag } = req.body;
+      console.log(image,caption)
       // Create new post
       const newPost = await PostSchema.create({
         image,
@@ -25,16 +26,18 @@ const postController = {
   deletePost: async (req, res) => {
     try {
       // Extract post ID from request parameters
-      const postId = req.params.id;
+      const {postId} = req.params;
+      console.log("postid",postId)
   
       // Check if the post exists
       const post = await PostSchema.findById(postId);
+      console.log(post)
       if (!post) {
         return res.status(404).json({ error: 'Post not found' });
       }
   
       // Check if the user is authorized to delete the post
-      if (post.postedBy !== req.userId) {
+      if (post.postedBy != req.userId) {
         return res.status(403).json({ error: 'Unauthorized' });
       }
   

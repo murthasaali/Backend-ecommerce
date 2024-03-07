@@ -12,7 +12,7 @@ const cartItemSchema = new Schema({
   }
 });
 
-const wishlisSchema = new Schema({
+const wishlistSchema = new Schema({
   productId: {
     type: Schema.Types.ObjectId,
     ref: 'Product'
@@ -29,6 +29,30 @@ const followerSchema = new Schema({
     default: Date.now
   }
 });
+
+// Define chatted user schema
+// const chattedUserSchema = new Schema({
+//   receiverId: {
+//     type: Schema.Types.ObjectId,
+//     ref: 'User' // Reference to the User model
+//   },
+//   lastChatTime: {
+//     type: Date,
+//     default: Date.now
+//   }
+// });
+
+const chattedUserSchema = new Schema({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User' // Reference to the User model
+  },
+  lastChatTime: {
+    type: Date,
+    default: Date.now
+  }
+});
+  
 
 const userSchema = new Schema({
   email: {
@@ -49,16 +73,17 @@ const userSchema = new Schema({
     type: String,
   },
   cart: [cartItemSchema],
-  wishlist: [wishlisSchema],
+  wishlist: [wishlistSchema],
   followers: [followerSchema], // Array of followers
   following: [{
     type: Schema.Types.ObjectId,
     ref: 'User'
   }],
   posts: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Post'
-  }]
+  }],
+  chattedUsers: [chattedUserSchema], // Array of chatted users
 });
 
 const User = mongoose.model('User', userSchema);
