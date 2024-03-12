@@ -70,27 +70,12 @@ io.on('connection', (socket) => {
       await message.save();
 
       // Update the chattedUsers array for the sender
-      const receiver = await User.findById(data.receiverId);
-      const sender = await User.findById(data.senderId);
-  
-      console.log(receiver)
-      console.log(sender)
-      
-
-      sender.chattedUsers.addToSet({
-        userId: receiver._id,
-        userEmail: receiver.email,
-        lastChatTime: new Date()
-      });
-      await sender.save();
+      await User.findOneAndUpdate(
+        { _id: data.senderId },
+        { $addToSet: { 'chattedUsers': { userEmail: data.receiverEmail, lastChatTime: new Date() } } }
+      );
 
       // Update the chattedUsers array for the receiver
-      receiver.chattedUsers.addToSet({
-        userId: sender._id,
-        userEmail: sender.email,
-        lastChatTime: new Date()
-      });
-      await receiver.save();
 
       // Broadcast the message to all connected clients
       io.emit('message', data);
