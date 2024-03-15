@@ -72,7 +72,11 @@ io.on('connection', (socket) => {
       // Update the chattedUsers array for the sender
       await User.findOneAndUpdate(
         { _id: data.senderId },
-        { $addToSet: { 'chattedUsers': { userEmail: data.receiverEmail, lastChatTime: new Date() } } }
+        { $addToSet: { 'chattedUsers': { userId:data.receiverId,userEmail: data.receiverEmail, lastChatTime: new Date() } } }
+      );
+      await User.findOneAndUpdate(
+        { _id: data.receiverId },
+        { $addToSet: { 'chattedUsers': { userId:data.senderId,userEmail: data.receiverEmail, lastChatTime: new Date() } } }
       );
 
       // Update the chattedUsers array for the receiver

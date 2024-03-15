@@ -7,8 +7,12 @@ exports.getChatHistory = async (req, res) => {
   try {
     console.log(req.userId,receiverId)
     const messages = await Message.find({
-      $and: [{ senderId: req.userId }, { receiverId: receiverId }]
-    }).sort({ timestamp: 'asc' });  
+      $or: [
+        { $and: [{ senderId: req.userId }, { receiverId: receiverId }] }, // Sender is req.userId and receiver is receiverId
+        { $and: [{ senderId: receiverId }, { receiverId: req.userId }] }  // Sender is receiverId and receiver is req.userId
+      ]
+    }).sort({ timestamp: 'desc' }).limit(10);
+    
     console.log(messages)
 
     res.status(200).json({ messages });
@@ -25,24 +29,19 @@ exports.getChattedUsers = async (req, res) => {
     const user = await User.findById(userId)
       .populate({
         path: 'chattedUsers.userId',
-        select: 'email image following'
+        select: 'email image'
       });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Extract chatted users
     const chattedUsers = user.chattedUsers;
-    console.log(user)
-    const uniqueChattedUsers = Array.from(
-      chattedUsers.reduce((map, chat) => {
-        if (!map.has(chat.userId.email) || map.get(chat.userId.email).lastChatTime < chat.lastChatTime) {
-          map.set(chat.userId.email, chat);
-        }
-        return map;
-      }, new Map()).values()
-    );
-    
+
+    // Use Set to remove duplicates based on userId
+    const uniqueChattedUsers = Array.from(new Set(chattedUsers.map(user => user.userId.toString())))
+      .map(userId => chattedUsers.find(user => user.userId.toString() === userId));
 
     res.status(200).json({ uniqueChattedUsers });
   } catch (error) {
