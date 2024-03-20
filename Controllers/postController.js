@@ -183,7 +183,23 @@ const postController = {
       console.error('Error fetching post comments:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
-  }
+  },getPostComments: async (req, res) => {
+    try {
+        const { postId } = req.params; // Assuming postId is passed in the URL params
+      console.log(postId)
+        // Query the database for comments associated with the given postId
+        const comments = await CommentSchema.find({ post: postId })
+            .populate('author', ' email image'); // Populate the author field with user details (username, email, and image)
+
+        // Return success response with the comments
+        console.log(comments)
+        return res.status(200).json({ comments });
+    } catch (error) {
+        console.error('Error fetching post comments:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
 };
 
 
