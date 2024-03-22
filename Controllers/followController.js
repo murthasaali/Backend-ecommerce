@@ -64,7 +64,7 @@ exports.unfollowUser = async (req, res) => {
 
 exports.getUnfollowedUsers = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.userId;
 
     console.log("hi",userId)
     // Find the user by ID including the users they are following
@@ -90,3 +90,26 @@ exports.getUnfollowedUsers = async (req, res) => {
   }
 }
 
+exports.getAllUnfollowingUsers = async (req, res) => {
+  try {
+    const userId = req.userId; // Assuming userId is obtained from authentication middleware
+
+    // Find the user by ID including the users they are following
+    const user = await User.findById(userId).populate('following', 'username');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Get IDs of users the user is following
+    const followingIds = user.following.map(user => user._id);
+
+    // Find all users except the current user and those the user is following
+    const usersNotFollowed = await User.find({ _id: { $ne: userId, $nin: followingIds } });
+
+    res.json(usersNotFollowed);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};

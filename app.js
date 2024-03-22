@@ -2,19 +2,20 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const bodyParser = require("body-parser");
+const http = require('http');
+const socketIo = require('socket.io');
+
+// Import routes
 const authRouter = require('./routes/authRouter');
-const wishlistrouter=require("./routes/wishlistRouter")
-const cartRouter = require('./routes/cartRouter'); // Corrected import
+const wishlistRouter = require("./routes/wishlistRouter");
+const cartRouter = require('./routes/cartRouter');
 const productRouter = require('./routes/productRouter');
-const postRouter = require("./routes/postRouter")
-const followRouter=require("./routes/followRouter")
+const postRouter = require("./routes/postRouter");
+const followRouter = require("./routes/followRouter");
 const messageRouter = require('./routes/messageRouter');
 
-const bodyParser = require("body-parser");
-const socketIo = require('socket.io');
-const http = require('http');
-
-// Import Message model
+// Import Message and User models
 const Message = require('./models/messageSchema');
 const User = require('./models/user');
 
@@ -44,14 +45,13 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 const server = http.createServer(app);
 
 // Initialize Socket.IO
-const io = require('socket.io')(server, {
+const io = socketIo(server, {
   cors: {
     origin: "http://localhost:3000", // Allow requests from this origin
     methods: ["GET", "POST"]
   }
 });
 
-// Socket.IO event handlers
 // Socket.IO event handlers
 io.on('connection', (socket) => {
   console.log('A user connected');
@@ -69,17 +69,17 @@ io.on('connection', (socket) => {
       });
       await message.save();
 
-      // Update the chattedUsers array for the sender
-      await User.findOneAndUpdate(
-        { _id: data.senderId },
-        { $addToSet: { 'chattedUsers': { userId:data.receiverId,userEmail: data.receiverEmail, lastChatTime: new Date() } } }
-      );
-      await User.findOneAndUpdate(
-        { _id: data.receiverId },
-        { $addToSet: { 'chattedUsers': { userId:data.senderId,userEmail: data.receiverEmail, lastChatTime: new Date() } } }
-      );
-
-      // Update the chattedUsers array for the receiver
+      // Update the chattedUsers array for both sender and receiver
+      await Promise.all([
+        User.findOneAndUpdate(
+          { _id: data.senderId },
+          { $addToSet: { 'chattedUsers': { userId: data.receiverId, userEmail: data.receiverEmail, lastChatTime: new Date() } } }
+        ),
+        User.findOneAndUpdate(
+          { _id: data.receiverId },
+          { $addToSet: { 'chattedUsers': { userId: data.senderId, userEmail: data.senderEmail, lastChatTime: new Date() } } }
+        )
+      ]);
 
       // Broadcast the message to all connected clients
       io.emit('message', data);
@@ -99,13 +99,11 @@ server.listen(port, () => {
 });
 
 // Define routes
-// Add your routes here if needed
 app.use('/auth', authRouter);
 app.use('/messages', messageRouter); // Use message router
-
 app.use('/cart', cartRouter);
-app.use('/wishlist',wishlistrouter)
-app.use('/posts',postRouter)
+app.use('/wishlist', wishlistRouter);
+app.use('/posts', postRouter);
 app.use('/admin', productRouter);
 app.use('/follows', followRouter);
 app.get('/protected', (req, res) => {

@@ -69,6 +69,9 @@ const userSchema = new Schema({
   username: {
     type: String,
   },
+  bio:{
+    type:String,
+  },
   image: {
     type: String,
   },

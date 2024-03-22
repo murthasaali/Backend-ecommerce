@@ -50,7 +50,7 @@ const login = async (req, res) => {
 
 const attachUserPhoto = async (req, res) => {
   const { userId } = req.params;
-  const { image } = req.body;
+  const { image,username,bio} = req.body;
 
   try {
     const user = await User.findById(userId);
@@ -61,6 +61,8 @@ const attachUserPhoto = async (req, res) => {
 
     // Update user's image field with the new image
     user.image = image;
+    user.username=username;
+    user.bio=bio
     await user.save();
 
     res.status(200).json({ message: "User photo updated successfully", user: user });
@@ -89,6 +91,7 @@ const getUserDetails = async (req, res) => {
    
     const userDetails = {
       username: user.username,
+      bio: user.bio,
       email: user.email,
       image: user.image,
       followersCount: user.followers,
