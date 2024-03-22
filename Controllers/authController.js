@@ -60,9 +60,16 @@ const attachUserPhoto = async (req, res) => {
     }
 
     // Update user's image field with the new image
-    user.image = image;
-    user.username=username;
-    user.bio=bio
+    if (image) {
+      user.image = image;
+    }
+    if (username) {
+      user.username = username;
+    }
+    if (bio) {
+      user.bio = bio;
+    }
+  
     await user.save();
 
     res.status(200).json({ message: "User photo updated successfully", user: user });

@@ -96,6 +96,7 @@ exports.getAllUnfollowingUsers = async (req, res) => {
 
     // Find the user by ID including the users they are following
     const user = await User.findById(userId).populate('following', 'username');
+    console.log(user)
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
