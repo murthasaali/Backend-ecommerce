@@ -126,19 +126,27 @@ const postController = {
   },
   getLatestPosts: async (req, res) => {
     try {
-      
-        // Query the database for the latest 10 posts, populating the 'postedBy' field to get full user details
+        // Get the page number from the request query parameters, default to 1 if not provided
+        const page = req.query.page ? parseInt(req.query.page) : 1;
+        const perPage = 10; // Number of posts per page
+
+        // Calculate the skip value based on the page number
+        const skip = (page - 1) * perPage;
+
+        // Query the database for posts for the specified page, populating the 'postedBy' field to get full user details
         const latestPosts = await PostSchema.find()
             .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-            .limit(10) // Limit the number of posts returned to 10
+            .skip(skip) // Skip posts based on the page number
+            .limit(perPage) // Limit the number of posts returned per page
             .populate({
-              path: 'comments',
-              populate: {
-                  path: 'author',
-                  select: 'email',
-                   // Select specific fields of the User model
-              }
-          }).populate('postedBy', 'email image username'); // Populate the 'postedBy' field with specific fields of the User model
+                path: 'comments',
+                populate: {
+                    path: 'author',
+                    select: 'email',
+                    // Select specific fields of the User model
+                }
+            })
+            .populate('postedBy', 'email image username'); // Populate the 'postedBy' field with specific fields of the User model
 
         // Iterate through each post and calculate the count of likes and comments
         const postsWithCounts = await Promise.all(latestPosts.map(async (post) => {
@@ -148,15 +156,14 @@ const postController = {
             // Count the number of comments for the post
 
             // Return the post along with the counts and the details of the user who posted it
-         
             return {
                 _id: post._id,
                 image: post.image,
                 caption: post.caption,
                 createdAt: post.createdAt,
                 likesCount,
-                comments:post.comments,
-                hashtag:post.hashtag,
+                comments: post.comments,
+                hashtag: post.hashtag,
                 postedBy: post.postedBy // Assuming 'postedBy' is populated, it will contain the full details of the user
             };
         }));
