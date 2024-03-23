@@ -138,7 +138,7 @@ const postController = {
                   select: 'email',
                    // Select specific fields of the User model
               }
-          }).populate('postedBy', 'email image'); // Populate the 'postedBy' field with specific fields of the User model
+          }).populate('postedBy', 'email image username'); // Populate the 'postedBy' field with specific fields of the User model
 
         // Iterate through each post and calculate the count of likes and comments
         const postsWithCounts = await Promise.all(latestPosts.map(async (post) => {
