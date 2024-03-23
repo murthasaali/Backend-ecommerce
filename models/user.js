@@ -85,9 +85,11 @@ const userSchema = new Schema({
   posts: [{
     type: Schema.Types.ObjectId,
     ref: 'Post'
-  }],
-  chattedUsers: [chattedUserSchema], // Array of chatted users
-});
+  }],chattedUsers: [chattedUserSchema]
+  // Array of chatted users
+},{
+  timestamps:true
+} );
 
 const User = mongoose.model('User', userSchema);
 
