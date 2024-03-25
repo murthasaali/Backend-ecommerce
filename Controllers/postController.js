@@ -128,7 +128,7 @@ const postController = {
     try {
         // Get the page number from the request query parameters, default to 1 if not provided
         const page = req.query.page ? parseInt(req.query.page) : 1;
-        const perPage = 10; // Number of posts per page
+        const perPage = req.params.perPage
 
         // Calculate the skip value based on the page number
         const skip = (page - 1) * perPage;
@@ -175,6 +175,7 @@ const postController = {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 },
+
 
   getPostComments: async (req, res) => {
     try {
