@@ -126,12 +126,17 @@ const populateUserPosts = async (userId) => {
 };
 const searchUsers = async (req, res) => {
   const { query } = req.query; // Assuming the query parameter is named 'query'
-
+console.log(query)
   try {
     // Perform a case-insensitive search on the username field using regex
-    const users = await User.find({ username: { $regex: query, $options: 'i' } });
+    const users = await User.find({ 
+      $or: [
+          { username: { $regex: query, $options: 'i' } }, // Searching by username
+          { email: { $regex: query, $options: 'i' } }     // Searching by email
+      ] 
+  });    console.log(users)
 
-    res.status(200).json({ users });
+    res.status(200).json(    users );
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
