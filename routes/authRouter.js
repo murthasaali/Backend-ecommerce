@@ -9,5 +9,6 @@ router.post('/register', authController.registerUser);
 router.post('/login', authController.login);
 router.post("/attachUserPhoto/:userId",authController.attachUserPhoto)
 router.get('/getUserDetails/:userId', authController.getUserDetails);
+router.get('/search', authController.searchUsers);
 
 module.exports = router;
