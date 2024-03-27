@@ -55,6 +55,12 @@ const io = socketIo(server, {
 io.on('connection', (socket) => {
   console.log('A user connected');
 
+  // Handle joining room
+  socket.on('join', (roomId) => {
+    socket.join(roomId);
+    console.log(`User joined room ${roomId}`);
+  });
+
   // Handle sending messages
   socket.on('message', async (data) => {
     console.log('Message received:', data);
@@ -80,16 +86,17 @@ io.on('connection', (socket) => {
         )
       ]);
 
-      // Emit the message to the receiver's socket connection
+      // Emit the message to the receiver's room
       io.to(data.receiverId).emit('message', data);
 
-      // Broadcast the message to all connected clients (optional)
+      // Optionally, broadcast the message to all connected clients
       // io.emit('message', data);
     } catch (error) {
       console.error('Error saving message:', error.message);
     }
   });
 });
+
 
 // Start the server
 server.listen(port, () => {
