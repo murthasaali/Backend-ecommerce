@@ -80,15 +80,14 @@ io.on('connection', (socket) => {
         )
       ]);
 
-      // Broadcast the message to all connected clients
-      io.emit('message', data);
+      // Emit the message to the receiver's socket connection
+      io.to(data.receiverId).emit('message', data);
+
+      // Broadcast the message to all connected clients (optional)
+      // io.emit('message', data);
     } catch (error) {
       console.error('Error saving message:', error.message);
     }
-  });
-
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
   });
 });
 
