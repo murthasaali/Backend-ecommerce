@@ -31,7 +31,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors({
   origin: 'https://unity-swart.vercel.app', // Allow requests from this origin
-  methods: ['GET', 'POST'], // Allow only specified HTTP methods
+  methods: ['GET', 'POST',"DELETE",], // Allow only specified HTTP methods
 }));
 
 // Connect to MongoDB using Mongoose
