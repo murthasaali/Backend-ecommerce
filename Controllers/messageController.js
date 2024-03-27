@@ -11,7 +11,7 @@ exports.getChatHistory = async (req, res) => {
         { $and: [{ senderId: req.userId }, { receiverId: receiverId }] }, // Sender is req.userId and receiver is receiverId
         { $and: [{ senderId: receiverId }, { receiverId: req.userId }] }  // Sender is receiverId and receiver is req.userId
       ]
-    }).sort({ timestamp: 'desc' }).limit(10);
+    }).sort({ timestamp: 'desc' }).limit(20);
     
     console.log(messages)
 
