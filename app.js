@@ -46,10 +46,17 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = socketIo(server, {
   cors: {
-    origin: "https://unity-swart.vercel.app", // Allow requests from this origin
+    origin: "https://unity-swart.vercel.app/", // Allow requests from this origin
     methods: ["GET", "POST"]
   }
 });
+
+// Socket.IO event handlers
+// Import a message queue library, such as Bull
+const Queue = require('bull');
+
+// Create a new Bull queue instance
+const messageQueue = new Queue('messages');
 
 // Socket.IO event handlers
 io.on('connection', (socket) => {
@@ -59,6 +66,9 @@ io.on('connection', (socket) => {
   socket.on('join', (roomId) => {
     socket.join(roomId);
     console.log(`User joined room ${roomId}`);
+
+    // Process queued messages for the current user upon connection
+    processQueuedMessages(roomId);
   });
 
   // Handle sending messages
@@ -66,6 +76,16 @@ io.on('connection', (socket) => {
     console.log('Message received:', data);
 
     try {
+      // Check if the receiver is online
+      const receiverSocket = io.sockets.in(data.receiverId);
+      if (receiverSocket && receiverSocket.length > 0) {
+        // If receiver is online, emit the message directly
+        receiverSocket.emit('message', data);
+      } else {
+        // If receiver is not online, enqueue the message
+        await messageQueue.add(data);
+      }
+
       // Save the message to the database
       const message = new Message({
         senderId: data.senderId,
@@ -85,18 +105,23 @@ io.on('connection', (socket) => {
           { $addToSet: { 'chattedUsers': { userId: data.senderId, userEmail: data.senderEmail, lastChatTime: new Date() } } }
         )
       ]);
-
-      // Emit the message to the receiver's room
-      io.to(data.receiverId).emit('message', data);
-
-      // Optionally, broadcast the message to all connected clients
-      // io.emit('message', data);
     } catch (error) {
-      console.error('Error saving message:', error.message);
+      console.error('Error handling message:', error.message);
     }
   });
 });
 
+// Function to process queued messages for a user upon connection
+async function processQueuedMessages(receiverId) {
+  const messages = await messageQueue.getJobs(['wait', 'active', 'completed']);
+  messages.forEach(async (job) => {
+    const data = job.data;
+    if (data.receiverId === receiverId) {
+      io.to(data.receiverId).emit('message', data);
+      await job.remove(); // Remove the message from the queue after delivery
+    }
+  });
+}
 
 // Start the server
 server.listen(port, () => {
