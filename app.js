@@ -46,10 +46,13 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = socketIo(server, {
   cors: {
-    origin: "https://unity-swart.vercel.app/", // Allow requests from this origin
+    origin: "http://localhost:3000  ", // Allow requests from this origin
     methods: ["GET", "POST"]
   }
 });
+
+// Socket.IO event handlers
+// Import Message model
 
 // Socket.IO event handlers
 io.on('connection', (socket) => {
@@ -66,25 +69,38 @@ io.on('connection', (socket) => {
     console.log('Message received:', data);
 
     try {
-      // Save the message to the database
-      const message = new Message({
-        senderId: data.senderId,
-        receiverId: data.receiverId,
-        message: data.message
-      });
-      await message.save();
+      // Find or create the message document for the sender
+      let user = await Message.findOne({ userId: data.senderId });
 
-      // Update the chattedUsers array for both sender and receiver
-      await Promise.all([
-        User.findOneAndUpdate(
-          { _id: data.senderId },
-          { $addToSet: { 'chattedUsers': { userId: data.receiverId, userEmail: data.receiverEmail, lastChatTime: new Date() } } }
-        ),
-        User.findOneAndUpdate(
-          { _id: data.receiverId },
-          { $addToSet: { 'chattedUsers': { userId: data.senderId, userEmail: data.senderEmail, lastChatTime: new Date() } } }
-        )
-      ]);
+      if (!user) {
+        user = new Message({ userId: data.senderId, chattedUsers: [] });
+      }
+
+      // Find the chatted person object for the receiver within the sender's message document
+      let receiverIndex = user.chattedUsers.findIndex(person => person.receiverId.toString() === data.receiverId);
+
+      // If the chatted person object for the receiver doesn't exist, create a new one
+      if (receiverIndex === -1) {
+        user.chattedUsers.push({ receiverId: data.receiverId, messages: [] });
+        receiverIndex = user.chattedUsers.length - 1;
+      }
+
+      // Add the message to the receiver's messages array within the chatted person object
+      user.chattedUsers[receiverIndex].messages.push({ text: data.message });
+      let receiverMessage = await Message.findOne({ userId: data.receiverId });
+      if (!receiverMessage) {
+        receiverMessage = new Message({ userId: data.receiverId, receivedUsers: [] });
+      }
+      let senderIndex = receiverMessage.receivedUsers.findIndex(user => user.userId.toString() === data.senderId);
+      if (senderIndex === -1) {
+        receiverMessage.receivedUsers.push({ userId: data.senderId, messages: [] });
+        senderIndex = receiverMessage.receivedUsers.length - 1;
+      }
+      receiverMessage.receivedUsers[senderIndex].messages.push({ text: data.message });
+
+      // Save the message document
+      await Promise.all([user.save(), receiverMessage.save()]);
+
 
       // Emit the message to the receiver's room
       io.to(data.receiverId).emit('message', data);
@@ -96,6 +112,7 @@ io.on('connection', (socket) => {
     }
   });
 });
+
 
 
 // Start the server

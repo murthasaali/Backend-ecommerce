@@ -5,16 +5,23 @@ exports.getChatHistory = async (req, res) => {
   const receiverId = req.params.receiverId;
 
   try {
-    console.log(req.userId,receiverId)
     const messages = await Message.find({
       $or: [
-        { $and: [{ senderId: req.userId }, { receiverId: receiverId }] }, // Sender is req.userId and receiver is receiverId
-        { $and: [{ senderId: receiverId }, { receiverId: req.userId }] }  // Sender is receiverId and receiver is req.userId
+        {
+          $and: [
+            { 'chattedUsers.receiverId': req.userId }, // Sender is receiverId
+            { 'userId': receiverId } // Receiver is req.userId
+          ]
+        },
+        {
+          $and: [
+            { 'chattedUsers.receiverId': receiverId }, // Sender is req.userId
+            { 'userId': req.userId } // Receiver is receiverId
+          ]
+        }
       ]
-    }).sort({ timestamp: 'desc' }).limit(20);
+    }).sort({ 'chattedUsers.messages.timestamp': 'desc' }).limit(20);
     
-    console.log(messages)
-
     res.status(200).json({ messages });
   } catch (error) {
     console.error('Error fetching chat history:', error);
