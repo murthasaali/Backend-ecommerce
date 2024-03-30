@@ -46,7 +46,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = socketIo(server, {
   cors: {
-    origin: "https://unity-swart.vercel.app/", // Allow requests from this origin
+    origin: "https://unity-swart.vercel.app", // Allow requests from this origin
     methods: ["GET", "POST"]
   }
 });
