@@ -8,7 +8,7 @@ router.post('/follow/:userId', followController.followUser);
 
 // Route to unfollow a user
 router.post('/unfollow/:followerId', followController.unfollowUser);
-router.get('/unfollowusers/:userId', followController.getUnfollowedUsers);
 router.get('/unfollowingusers/:userId', followController.getAllUnfollowingUsers);
+router.get('/getAllFollowers/:userId', followController.getFollowers);
 
 module.exports = router;
