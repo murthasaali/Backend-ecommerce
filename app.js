@@ -63,6 +63,10 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     console.log(`User joined room ${roomId}`);
   });
+  socket.on('notification', (roomId) => {
+    socket.join(roomId);
+    console.log(`User joined notifiction ${roomId}`);
+  });
 
   // Handle sending messages
   socket.on('message', async (data) => {

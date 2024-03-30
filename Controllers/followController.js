@@ -24,6 +24,8 @@ exports.followUser = async (req, res) => {
     userToFollow.followers.push(req.userId)
     await currentUser.save();
     await userToFollow.save();
+    io.to(req.userId).emit('notification', "😎");
+
 
     res.status(200).json({ message: "User followed successfully" ,data:currentUser});
   } catch (error) {
