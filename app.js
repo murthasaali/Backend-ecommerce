@@ -46,7 +46,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000  ", // Allow requests from this origin
+    origin: "https://unity-swart.vercel.app/", // Allow requests from this origin
     methods: ["GET", "POST"]
   }
 });
@@ -86,7 +86,7 @@ io.on('connection', (socket) => {
       }
 
       // Add the message to the receiver's messages array within the chatted person object
-      user.chattedUsers[receiverIndex].messages.push({ text: data.message });
+      user.chattedUsers[receiverIndex].messages.push({ text: data.text });
       let receiverMessage = await Message.findOne({ userId: data.receiverId });
       if (!receiverMessage) {
         receiverMessage = new Message({ userId: data.receiverId, receivedUsers: [] });
@@ -96,14 +96,17 @@ io.on('connection', (socket) => {
         receiverMessage.receivedUsers.push({ userId: data.senderId, messages: [] });
         senderIndex = receiverMessage.receivedUsers.length - 1;
       }
-      receiverMessage.receivedUsers[senderIndex].messages.push({ text: data.message });
+      receiverMessage.receivedUsers[senderIndex].messages.push({ text: data.text });
 
       // Save the message document
       await Promise.all([user.save(), receiverMessage.save()]);
 
 
       // Emit the message to the receiver's room
-      io.to(data.receiverId).emit('message', data);
+      const joinId = [data.senderId, data.receiverId].sort().join(""); // Create a unique join ID by sorting and concatenating senderId and userId
+      const is =joinId.startsWith(data.senderId)
+      console.log(joinId,data,is)
+      io.to(joinId).emit('message', data);
 
       // Optionally, broadcast the message to all connected clients
       // io.emit('message', data);
