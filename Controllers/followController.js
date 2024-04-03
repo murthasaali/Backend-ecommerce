@@ -14,6 +14,7 @@ exports.followUser = async (req, res) => {
     // Check if the current user is already following the user
     const currentUser = await User.findById(req.userId);
     
+    
     console.log(currentUser)
     if (currentUser.following.includes(userId)) {
       return res.status(400).json({ message: "You are already following this user" , data:currentUser});
