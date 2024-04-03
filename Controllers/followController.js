@@ -3,14 +3,14 @@ const User = require('../models/user');
 // Controller function to follow a user
 exports.followUser = async (req, res) => {
   const { userId } = req.params;
-
+  console.log("hello",userId)
   try {
     // Find the user to follow
     const userToFollow = await User.findById(userId);
     if (!userToFollow) {
       return res.status(404).json({ message: "User not found" });
     }
-
+    
     // Check if the current user is already following the user
     const currentUser = await User.findById(req.userId);
     
@@ -19,16 +19,16 @@ exports.followUser = async (req, res) => {
     if (currentUser.following.includes(userId)) {
       return res.status(400).json({ message: "You are already following this user" , data:currentUser});
     }
-
+    
     // Update the current user's following list
     currentUser.following.push(userId);
     userToFollow.followers.push(req.userId)
+    console.log(currentUser,userToFollow)
     await currentUser.save();
     await userToFollow.save();
     io.to(req.userId).emit('notification', "😎");
 
-
-    res.status(200).json({ message: "User followed successfully" ,data:currentUser});
+    res.status(200).json({ message: "User followed successfully"});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
