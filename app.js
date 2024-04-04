@@ -54,7 +54,7 @@ const io = socketIo(server, {
 });
 followController.setIo(io);
 
-
+let onlineUsers = [];
 // Socket.IO event handlers
 // Import Message model
 
