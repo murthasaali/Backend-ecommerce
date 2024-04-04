@@ -6,6 +6,8 @@ const http = require('http');
 const socketIo = require('socket.io');
 
 // Import routes
+const followController = require('./Controllers/followController'); // Import your followController
+
 const authRouter = require('./routes/authRouter');
 const wishlistRouter = require("./routes/wishlistRouter");
 const cartRouter = require('./routes/cartRouter');
@@ -46,15 +48,30 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = socketIo(server, {
   cors: {
-    origin: "https://unity-swart.vercel.app", // Allow requests from this origin
+    origin: "http://localhost:3000", // Allow requests from this origin
     methods: ["GET", "POST"]
   }
 });
+followController.setIo(io);
+
 
 // Socket.IO event handlers
 // Import Message model
 
 // Socket.IO event handlers
+const addNewUser = (username, socketId) => {
+  !onlineUsers.some((user) => user.username === username) &&
+    onlineUsers.push({ username, socketId });
+};
+
+const removeUser = (socketId) => {
+  onlineUsers = onlineUsers.filter((user) => user.socketId !== socketId);
+};
+
+const getUser = (username) => {
+  return onlineUsers.find((user) => user.username === username);
+};
+
 io.on('connection', (socket) => {
   console.log('A user connected');
 
@@ -63,10 +80,19 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     console.log(`User joined room ${roomId}`);
   });
-  socket.on('notification', (roomId) => {
-    socket.join(roomId);
-    console.log(`User joined notifiction ${roomId}`);
+
+  socket.on("newUser", (username) => {
+    addNewUser(username, socket.id);
   });
+
+  socket.on("sendNotification", ({ senderName, receiverName, type }) => {
+    const receiver = getUser(receiverName);
+    io.to(receiver.socketId).emit("getNotification", {
+      senderName,
+      type,
+    });
+  });
+
 
   // Handle sending messages
   socket.on('message', async (data) => {
@@ -118,6 +144,9 @@ io.on('connection', (socket) => {
       console.error('Error saving message:', error.message);
     }
   });
+  socket.on("disconnect", () => {
+    removeUser(socket.id);
+  });
 });
 
 
@@ -138,3 +167,5 @@ app.use('/follows', followRouter);
 app.get('/protected', (req, res) => {
   res.json({ message: 'Access granted' });
 });
+
+module.exports = { app, io };

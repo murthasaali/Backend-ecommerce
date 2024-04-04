@@ -4,7 +4,7 @@ const User = require('../models/user');
 const Post = require('../models/postModal');
 
 const registerUser = async (req, res) => {
-  const { email, password,image,username } = req.body;
+  const { email, password,image,name } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -15,7 +15,7 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({ email, password: hashedPassword });
+    const newUser = await User.create({ email, password: hashedPassword,username:name });
 
     res.status(201).json({ message: 'User registered successfully', user: newUser });
   } catch (error) {

@@ -1,34 +1,42 @@
 const User = require('../models/user');
+let io; // Declare a variable to store the io object
+
+// Function to set the io object
+exports.setIo = (socketIo) => {
+  io = socketIo;
+};
 
 // Controller function to follow a user
+// Controller function to follow a user
 exports.followUser = async (req, res) => {
+  if (!io) {
+    return res.status(500).json({ message: "Socket.IO not initialized" });
+  }
+
   const { userId } = req.params;
-  console.log("hello",userId)
+
   try {
-    // Find the user to follow
     const userToFollow = await User.findById(userId);
     if (!userToFollow) {
       return res.status(404).json({ message: "User not found" });
     }
-    
-    // Check if the current user is already following the user
+
     const currentUser = await User.findById(req.userId);
-    
-    
-    console.log(currentUser)
     if (currentUser.following.includes(userId)) {
-      return res.status(400).json({ message: "You are already following this user" , data:currentUser});
+      return res.status(400).json({ message: "You are already following this user" });
     }
-    
+
     // Update the current user's following list
     currentUser.following.push(userId);
-    userToFollow.followers.push(req.userId)
-    console.log(currentUser,userToFollow)
+    userToFollow.followers.push(req.userId);
     await currentUser.save();
     await userToFollow.save();
-    io.to(req.userId).emit('notification', "😎");
 
-    res.status(200).json({ message: "User followed successfully"});
+    // Emit a notification to the user being followed
+    io.to(req.userId).emit('notification', { message: "You have a new follower!", followerId: req.userId });
+    console.log("Notification sent to user:",req.userId);
+
+    res.status(200).json({ message: "User followed successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -113,10 +121,12 @@ exports.getFollowers = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-console.log(user.followers)
+// console.log(user.followers)
     res.json(user.followers);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+
