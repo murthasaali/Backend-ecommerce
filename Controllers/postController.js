@@ -1,5 +1,5 @@
 const {PostSchema,CommentSchema,LikeSchema} = require("../models/postModal") // Assuming your schemas are in a 'models' directory
-
+const {notificationSchema}=require("../models/notificationSchema")
 const postController = {
     createPost: async (req, res) => {
     try {
@@ -103,6 +103,14 @@ const postController = {
         // Update likes count
         post.likesCount -= 1;
         await post.save();
+        // const notificationMessage = `${req.userId} is liked your post`;
+
+        // // Create and save notification
+        // const notification = new Notification({
+        //   receiverId: req.userId,
+        //   messages: [{ text: notificationMessage,userId:post.postedBy._id }],
+        // });
+        // await notification.save();
   
         return res.status(200).json({ message: 'Post disliked successfully' });
       }

@@ -6,7 +6,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 
 // Import routes
-const followController = require('./Controllers/followController'); // Import your followController
+const notificationRouter = require('./routes/notificationRouter'); // Import your followController
 
 const authRouter = require('./routes/authRouter');
 const wishlistRouter = require("./routes/wishlistRouter");
@@ -52,7 +52,6 @@ const io = socketIo(server, {
     methods: ["GET", "POST"]
   }
 });
-followController.setIo(io);
 
 let onlineUsers = [];
 // Socket.IO event handlers
@@ -60,15 +59,21 @@ let onlineUsers = [];
 
 // Socket.IO event handlers
 const addNewUser = (username, socketId) => {
+
   !onlineUsers.some((user) => user.username === username) &&
     onlineUsers.push({ username, socketId });
+      console.log(onlineUsers)
+
 };
 
 const removeUser = (socketId) => {
   onlineUsers = onlineUsers.filter((user) => user.socketId !== socketId);
+        console.log(onlineUsers)
+
 };
 
 const getUser = (username) => {
+  console.log(onlineUsers)
   return onlineUsers.find((user) => user.username === username);
 };
 
@@ -82,16 +87,25 @@ io.on('connection', (socket) => {
   });
 
   socket.on("newUser", (username) => {
+    console.log(socket.id,username)
     addNewUser(username, socket.id);
   });
 
-  socket.on("sendNotification", ({ senderName, receiverName, type }) => {
+  socket.on("sendNotification", ({ senderName, receiverName,type }) => {
     const receiver = getUser(receiverName);
-    io.to(receiver.socketId).emit("getNotification", {
-      senderName,
-      type,
-    });
+    console.log(receiver)
+    console.log("reciever",receiver)
+    if (receiver) { // Check if receiver exists
+      io.to(receiver.socketId).emit("getNotification", {
+        senderName,
+        type,
+        
+      });
+    } else {
+      console.log(`Receiver ${receiverName} not found.`);
+    }
   });
+
 
 
   // Handle sending messages
@@ -164,6 +178,7 @@ app.use('/wishlist', wishlistRouter);
 app.use('/posts', postRouter);
 app.use('/admin', productRouter);
 app.use('/follows', followRouter);
+app.use('/notification', notificationRouter);
 app.get('/protected', (req, res) => {
   res.json({ message: 'Access granted' });
 });

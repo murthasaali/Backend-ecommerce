@@ -1,18 +1,7 @@
 const User = require('../models/user');
-let io; // Declare a variable to store the io object
+const Notification = require('../models/notificationSchema')
 
-// Function to set the io object
-exports.setIo = (socketIo) => {
-  io = socketIo;
-};
-
-// Controller function to follow a user
-// Controller function to follow a user
 exports.followUser = async (req, res) => {
-  if (!io) {
-    return res.status(500).json({ message: "Socket.IO not initialized" });
-  }
-
   const { userId } = req.params;
 
   try {
@@ -32,9 +21,25 @@ exports.followUser = async (req, res) => {
     await currentUser.save();
     await userToFollow.save();
 
-    // Emit a notification to the user being followed
-    io.to(req.userId).emit('notification', { message: "You have a new follower!", followerId: req.userId });
-    console.log("Notification sent to user:",req.userId);
+    // Create notification message
+    const notificationMessage = `${currentUser.username} followed you`;
+
+
+    // Find an existing notification for the receiverId
+    let notification = await Notification.findOne({ receiverId: userId });
+    console.log(notification);
+
+    // If a notification doesn't exist, create a new one
+    if (!notification) {
+      notification = new Notification({ receiverId: userId, messages: [] });
+    }
+
+    // Push the new message to the messages array
+    notification.messages.push({ text: notificationMessage, userId: req.userId });
+
+    // Save the updated notification
+    await notification.save();
+
 
     res.status(200).json({ message: "User followed successfully" });
   } catch (error) {
@@ -43,7 +48,6 @@ exports.followUser = async (req, res) => {
   }
 };
 
-// Controller function to unfollow a user
 exports.unfollowUser = async (req, res) => {
   const { userId } = req.params;
 

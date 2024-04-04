@@ -1,7 +1,12 @@
 const mongoose = require('mongoose');
 
-// Define a schema for message with text and timestamp
+// Define a schema for message with text, userId, and timestamp
 const messageSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Reference to the User model
+    required: true
+  },
   text: {
     type: String,
     required: true
@@ -14,7 +19,8 @@ const messageSchema = new mongoose.Schema({
 
 const notificationSchema = new mongoose.Schema({
   receiverId: {
-    type: mongoose.Schema.Types.ObjectId, // assuming userId is stored as ObjectId
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Reference to the User model
     required: true
   },
   messages: [messageSchema], // Embed message schema as an array

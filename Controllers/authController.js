@@ -39,10 +39,11 @@ const login = async (req, res) => {
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
-
+    
     const token = jwt.sign({ userId: user.id}, process.env.JWT_SECRET, { expiresIn: "48h" });
+    const existingUser = await User.findOne({ email });
 
-    res.status(200).json({ status: "succes", message: "Login Successfull", data: token, id});
+    res.status(200).json({ status: "succes", message: "Login Successfull", data: token, id,user:existingUser.username?existingUser.username:existingUser.email});
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
