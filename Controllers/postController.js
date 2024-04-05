@@ -1,5 +1,5 @@
 const {PostSchema,CommentSchema,LikeSchema} = require("../models/postModal") // Assuming your schemas are in a 'models' directory
-const {notificationSchema}=require("../models/notificationSchema")
+const Notification = require('../models/notificationSchema')
 const postController = {
     createPost: async (req, res) => {
     try {
@@ -81,17 +81,15 @@ const postController = {
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   },
-  likepost : async (req,res)=>{
+  likepost: async (req, res) => {
     try {
-      const {postId}=req.body
-      const post =await PostSchema.findById(postId)
-      if(!post) {
-        res.status(400).json({error:"Post not Found"})
+      const { postId ,username} = req.body;
+      const post = await PostSchema.findById(postId);
+      if (!post) {
+        return res.status(400).json({ error: "Post not found" });
       }
-      
-     
+  
       let existingLike = await LikeSchema.findOne({ post: postId, likedby: req.userId });
-      console.log(existingLike);
       if (existingLike) {
         // If like exists, remove it (dislike)
         await LikeSchema.deleteOne({ _id: existingLike._id });
@@ -103,35 +101,49 @@ const postController = {
         // Update likes count
         post.likesCount -= 1;
         await post.save();
-        // const notificationMessage = `${req.userId} is liked your post`;
 
-        // // Create and save notification
-        // const notification = new Notification({
-        //   receiverId: req.userId,
-        //   messages: [{ text: notificationMessage,userId:post.postedBy._id }],
-        // });
-        // await notification.save();
+        // Save the updated notification
+        await notification.save();
   
         return res.status(200).json({ message: 'Post disliked successfully' });
       }
-      const newLike= await LikeSchema.create({
-        post:postId,
-        likedby:req.userId
-
-      })
-
+  
+      const newLike = await LikeSchema.create({
+        post: postId,
+        likedby: req.userId
+      });
+  
       post.likes.push(newLike._id);
       await post.save();
-
+  
       post.likesCount += 1;
       await post.save();
-
+  
+      // Create notification message
+      const notificationMessage = `${username} liked your post`;
+      const notificationImage = post.image; // Get post image
+  
+      // Find an existing notification for the receiverId
+      let notification = await Notification.findOne({ receiverId: post.postedBy });
+  
+      // If a notification doesn't exist, create a new one
+      if (!notification) {
+        notification = new Notification({ receiverId: post.postedBy, messages: [] });
+      }
+  
+      // Push the new message to the messages array
+      notification.messages.push({ text: notificationMessage, userId: req.userId, image: notificationImage });
+  
+      // Save the updated notification
+      await notification.save();
+  
       return res.status(201).json({ message: 'Post liked successfully', like: newLike });
     } catch (error) {
       console.error('Error liking post:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   },
+  
   getLatestPosts: async (req, res) => {
     try {
         // Get the page number from the request query parameters, default to 1 if not provided
