@@ -226,9 +226,32 @@ const postController = {
         console.error('Error fetching post comments:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
-}
+},getAPost: async (req, res) => {
+  try {
+      const { postId } = req.params; // Assuming postId is passed in the URL params
+
+      // Query the database to find the post with the given postId
+      const post = await PostSchema.findById(postId)
+          .populate('comments')
+          .populate('postedBy', 'email image username');
+
+      // If the post is not found, return a 404 error
+      if (!post) {
+          return res.status(404).json({ error: 'Post not found' });
+      }
+
+      // Return success response with the post details
+      return res.status(200).json({ post });
+  } catch (error) {
+      console.error('Error fetching a post:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+  }
+},
+
+
 
 };
+
 
 
 module.exports = postController;

@@ -11,6 +11,7 @@ router.get('/getAllComment/:postId', postController.getPostComments);
 router.post('/likepost', postController.likepost);
 router.get('/getposts/:perPage', postController.getLatestPosts);
 router.get('/getpostcomment/:postId', postController.getPostComments);
+router.get('/getapost/:postId', postController.getAPost);
 router.delete('/delete/:postId', postController.deletePost);
 
 module.exports = router;
